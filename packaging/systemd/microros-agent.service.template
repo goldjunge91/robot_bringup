@@ -1,0 +1,15 @@
+[Unit]
+Description=micro-ROS Agent (system-wide)
+After=network.target
+
+[Service]
+Type=simple
+User=%USER%
+ExecStart=/usr/bin/env bash -lc 'ros2 run micro_ros_agent micro_ros_agent serial --dev %SERIAL_PORT% -b %BAUD% -v6'
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+# Replace %USER%, %SERIAL_PORT% and %BAUD% when installing on the target system.
