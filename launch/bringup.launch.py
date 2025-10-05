@@ -30,19 +30,19 @@ def generate_launch_description():
         choices=["basic", "telepresence", "autonomy", "manipulation", "manipulation_pro"],
     )
 
-    default_mecanum_value = "True"
+    # Always use mecanum drive for robot_xl
     declare_mecanum_arg = DeclareLaunchArgument(
         "mecanum",
-        default_value=default_mecanum_value,
-        description="Use mecanum drive (True) or diff drive (False)",
-        choices=["True", "False"],
+        default_value="True",
+        description="Use mecanum drive (always True for robot_xl)",
+        choices=["True"],
     )
 
     declare_robot_model_arg = DeclareLaunchArgument(
         "robot_model",
         default_value=EnvironmentVariable("ROBOT_MODEL_NAME", default_value="robot_xl"),
-        description="Specify robot model",
-        choices=["robot", "robot_xl"],
+        description="Specify robot model (only robot_xl supported)",
+        choices=["robot_xl"],
     )
 
     declare_namespace_arg = DeclareLaunchArgument(
