@@ -12,6 +12,8 @@ setup(
         ("share/" + package_name + "/launch", [
             "launch/bringup.launch.py",
             "launch/microros_agent.launch.py",
+            "launch/hardware_bringup.launch.py",
+            "launch/foxglove.launch.py",
         ]),
     ],
     install_requires=["setuptools"],
