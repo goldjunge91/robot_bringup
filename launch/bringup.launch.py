@@ -113,10 +113,10 @@ def generate_launch_description():
         name="camera",
         parameters=[{
             "video_device": EnvironmentVariable("CAMERA_DEVICE", default_value="/dev/video0"),
-            "image_width": 1920,
-            "image_height": 1080,
-            "framerate": 30.0,
-            "pixel_format": "yuyv",
+            "image_width": 640,  # Reduziert für bessere Performance
+            "image_height": 480,
+            "framerate": 15.0,  # Reduziert für weniger Bandbreite
+            "pixel_format": "mjpeg",  # MJPEG für bessere Farbunterstützung
             "camera_frame_id": "camera_link",
             "io_method": "mmap",
         }],
