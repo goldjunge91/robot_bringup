@@ -23,6 +23,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch.actions import ExecuteProcess, LogInfo
+from launch_ros.actions import Node
 
 
 def _generate_agent_process(context, *args, **kwargs):
@@ -33,6 +34,27 @@ def _generate_agent_process(context, *args, **kwargs):
     udp_port = LaunchConfiguration('udp_port').perform(context)
 
     actions = []
+
+    # Topic remappings to connect micro-ROS topics to ROS2 system
+    # Note: micro-ROS Agent automatically adds /rt/ prefix to all topics
+    topic_remappings = [
+        # Map Pico joint states to standard ROS2 joint_states topic
+        ('/rt/joint_states', '/joint_states'),
+        # Map Pico IMU to hardware interface expected topic
+        ('/rt/ddd/imu', '/robot_system_node/imu'),
+        # Map Pico odometry
+        ('/rt/ddd/odom', '/odom_pico'),
+        # Map ToF range sensor
+        ('/rt/ddd/range_tof', '/range_tof'),
+        # Map HCSR04 range sensor
+        ('/rt/ddd/range', '/range'),
+        # Map illuminance sensor
+        ('/rt/ddd/illuminance', '/illuminance'),
+        # Map pico counter (for debugging)
+        ('/rt/pico_rnd', '/pico_count'),
+        # Map cmd_vel from ROS2 to Pico
+        ('/cmd_vel', '/rt/cmd_vel'),
+    ]
 
     if use_docker.lower() in ('1', 'true', 'yes'):
         # Run official Docker image. Use --network host to simplify network transports
@@ -55,19 +77,19 @@ def _generate_agent_process(context, *args, **kwargs):
         actions.append(LogInfo(msg=['Starting micro-ROS Agent (docker): ', str(cmd)]))
         actions.append(ExecuteProcess(cmd=cmd, output='screen'))
     else:
-        # Use system-installed micro-ROS Agent via ros2 run
-        cmd = ['ros2', 'run', 'micro_ros_agent', 'micro_ros_agent']
-        if transport == 'serial':
-            cmd += ['serial', '--dev', serial_port, '-b', baudrate, '-v6']
-        elif transport in ('udp4', 'tcp4'):
-            cmd += [transport, '--port', udp_port, '-v6']
-        elif transport == 'canfd':
-            cmd += ['canfd', '--dev', serial_port, '-v6']
-        else:
-            cmd += [transport, '--port', udp_port, '-v6']
-
-        actions.append(LogInfo(msg=['Starting micro-ROS Agent (ros2): ', str(cmd)]))
-        actions.append(ExecuteProcess(cmd=cmd, output='screen'))
+        # Use system-installed micro-ROS Agent via ros2 run with topic remappings
+        actions.append(LogInfo(msg=['Starting micro-ROS Agent (ros2) with topic remappings']))
+        actions.append(
+            Node(
+                package='micro_ros_agent',
+                executable='micro_ros_agent',
+                name='micro_ros_agent',
+                arguments=[transport, '--dev', serial_port, '-b', baudrate, '-v6'] if transport == 'serial' 
+                         else [transport, '--port', udp_port, '-v6'],
+                remappings=topic_remappings,
+                output='screen'
+            )
+        )
 
     return actions
 
