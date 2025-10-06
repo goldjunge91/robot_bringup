@@ -11,6 +11,7 @@ from launch.substitutions import (
     LaunchConfiguration,
     PathJoinSubstitution,
 )
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -22,6 +23,7 @@ def generate_launch_description():
     robot_model = LaunchConfiguration("robot_model")
     use_sim = LaunchConfiguration("use_sim")
     microros = LaunchConfiguration("microros")
+    camera = LaunchConfiguration("camera")
 
     declare_configuration_arg = DeclareLaunchArgument(
         "configuration",
@@ -72,6 +74,13 @@ def generate_launch_description():
         choices=["True", "False"],
     )
 
+    declare_camera_arg = DeclareLaunchArgument(
+        "camera",
+        default_value="True",
+        description="Start USB camera node",
+        choices=["True", "False"],
+    )
+
     controller_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -97,6 +106,23 @@ def generate_launch_description():
         condition=IfCondition(microros),
     )
 
+    # USB Camera Node
+    camera_node = Node(
+        package="usb_cam",
+        executable="usb_cam_node_exe",
+        name="camera",
+        parameters=[{
+            "video_device": EnvironmentVariable("CAMERA_DEVICE", default_value="/dev/video0"),
+            "image_width": 1920,
+            "image_height": 1080,
+            "framerate": 30.0,
+            "pixel_format": "yuyv",
+            "camera_frame_id": "camera_link",
+            "io_method": "mmap",
+        }],
+        condition=IfCondition(camera),
+    )
+
     return LaunchDescription(
         [
             declare_configuration_arg,
@@ -106,7 +132,9 @@ def generate_launch_description():
             declare_use_sim_arg,
             declare_microros_arg,
             declare_include_nerf_arg,
+            declare_camera_arg,
             microros_agent_launch,
             controller_launch,
+            camera_node,
         ]
     )
