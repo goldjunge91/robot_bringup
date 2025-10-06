@@ -116,7 +116,7 @@ def generate_launch_description():
             "image_width": 640,  # Reduziert für bessere Performance
             "image_height": 480,
             "framerate": 15.0,  # Reduziert für weniger Bandbreite
-            "pixel_format": "mjpeg",  # MJPEG für bessere Farbunterstützung
+            "pixel_format": "yuyv",  # MJPEG für bessere Farbunterstützung
             "camera_frame_id": "camera_link",
             "io_method": "mmap",
         }],
