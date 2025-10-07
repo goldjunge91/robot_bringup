@@ -84,8 +84,8 @@ def _generate_agent_process(context, *args, **kwargs):
                 package='micro_ros_agent',
                 executable='micro_ros_agent',
                 name='micro_ros_agent',
-                arguments=[transport, '--dev', serial_port, '-b', baudrate, '-v6'] if transport == 'serial' 
-                         else [transport, '--port', udp_port, '-v6'],
+                arguments=[transport, '--dev', serial_port, '-b', baudrate, '-v6'] if transport == 'serial'
+                else [transport, '--port', udp_port, '-v6'],
                 remappings=topic_remappings,
                 output='screen'
             )
