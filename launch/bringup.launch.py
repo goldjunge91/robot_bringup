@@ -24,7 +24,6 @@ def generate_launch_description():
     use_sim = LaunchConfiguration("use_sim")
     microros = LaunchConfiguration("microros")
     camera = LaunchConfiguration("camera")
-    use_imu = LaunchConfiguration("use_imu")
 
     declare_configuration_arg = DeclareLaunchArgument(
         "configuration",
@@ -82,13 +81,6 @@ def generate_launch_description():
         choices=["True", "False"],
     )
 
-    declare_use_imu_arg = DeclareLaunchArgument(
-        "use_imu",
-        default_value="False",
-        description="Start IMU broadcaster (requires IMU enabled in firmware)",
-        choices=["True", "False"],
-    )
-
     controller_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -102,7 +94,6 @@ def generate_launch_description():
             "robot_model": robot_model,
             "use_sim": use_sim,
             "include_nerf_launcher": include_nerf_launcher,
-            "use_imu": use_imu,
         }.items(),
     )
 
@@ -142,7 +133,6 @@ def generate_launch_description():
             declare_microros_arg,
             declare_include_nerf_arg,
             declare_camera_arg,
-            declare_use_imu_arg,
             microros_agent_launch,
             controller_launch,
             camera_node,
