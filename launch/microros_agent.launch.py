@@ -36,24 +36,43 @@ def _generate_agent_process(context, *args, **kwargs):
     actions = []
 
     # Topic remappings to connect micro-ROS topics to ROS2 system
-    # Note: micro-ROS Agent automatically adds /rt/ prefix to all topics
+    # 
+    # IMPORTANT: micro-ROS Agent automatically adds /rt/ prefix to all topics
+    # published/subscribed by the Pico firmware. This remapping configuration
+    # maps those /rt/* topics to standard ROS2 topic names.
+    #
+    # Firmware Topic Flow:
+    # ====================
+    # Publishers (Pico → ROS2):
+    #   - Firmware publishes "joint_states" → Agent sees "/rt/joint_states" → Remapped to "/joint_states"
+    #   - Firmware publishes "imu/data_raw" → Agent sees "/rt/imu/data_raw" → Remapped to "/imu/data_raw"
+    #   - Firmware publishes "odom" → Agent sees "/rt/odom" → Remapped to "/odom"
+    #   - Firmware publishes "sensors/range_tof" → Agent sees "/rt/sensors/range_tof" → Remapped to "/sensors/range_tof"
+    #   - Firmware publishes "sensors/range_ultrasonic" → Agent sees "/rt/sensors/range_ultrasonic" → Remapped to "/sensors/range_ultrasonic"
+    #   - Firmware publishes "sensors/illuminance" → Agent sees "/rt/sensors/illuminance" → Remapped to "/sensors/illuminance"
+    #   - Firmware publishes "pico_rnd" → Agent sees "/rt/pico_rnd" (debug counter, not remapped)
+    #
+    # Subscribers (ROS2 → Pico):
+    #   - ROS2 publishes "/cmd_vel" → Agent remaps to "/rt/cmd_vel" → Firmware receives "cmd_vel"
+    #
+    # These remappings ensure compatibility with standard ROS2 tools (RViz, Nav2, etc.)
+    # and align with REP-105 (Coordinate Frames for Mobile Platforms).
+    #
     topic_remappings = [
-        # Map Pico joint states to standard ROS2 joint_states topic
-        ('/rt/joint_states', '/joint_states'),
-        # Map Pico IMU to hardware interface expected topic
-        ('/rt/ddd/imu', '/robot_system_node/imu'),
-        # Map Pico odometry
-        ('/rt/ddd/odom', '/odom_pico'),
-        # Map ToF range sensor
-        ('/rt/ddd/range_tof', '/range_tof'),
-        # Map HCSR04 range sensor
-        ('/rt/ddd/range', '/range'),
-        # Map illuminance sensor
-        ('/rt/ddd/illuminance', '/illuminance'),
-        # Map pico counter (for debugging)
-        ('/rt/pico_rnd', '/pico_count'),
-        # Map cmd_vel from ROS2 to Pico
-        ('/cmd_vel', '/rt/cmd_vel'),
+        # Standard sensor topics - map from /rt/* to standard ROS2 names
+        ('/rt/joint_states', '/joint_states'),              # Motor encoder states
+        ('/rt/imu/data_raw', '/imu/data_raw'),              # ICM20948 9-DOF IMU data
+        ('/rt/odom', '/odom'),                              # Wheel odometry from firmware
+        
+        # Range sensors - descriptive names under /sensors namespace
+        ('/rt/sensors/range_tof', '/sensors/range_tof'),    # VL6180X Time-of-Flight sensor
+        ('/rt/sensors/range_ultrasonic', '/sensors/range_ultrasonic'),  # HC-SR04 ultrasonic sensor
+        
+        # Other sensors
+        ('/rt/sensors/illuminance', '/sensors/illuminance'), # VL6180X ambient light sensor
+        
+        # Command topics - bidirectional mapping for velocity commands
+        ('/cmd_vel', '/rt/cmd_vel'),                        # Twist commands from controllers to firmware
     ]
 
     if use_docker.lower() in ('1', 'true', 'yes'):
