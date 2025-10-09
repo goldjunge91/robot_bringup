@@ -24,6 +24,7 @@ def generate_launch_description():
     use_sim = LaunchConfiguration("use_sim")
     microros = LaunchConfiguration("microros")
     camera = LaunchConfiguration("camera")
+    localization = LaunchConfiguration("localization")
 
     declare_configuration_arg = DeclareLaunchArgument(
         "configuration",
@@ -81,6 +82,13 @@ def generate_launch_description():
         choices=["True", "False"],
     )
 
+    declare_localization_arg = DeclareLaunchArgument(
+        "localization",
+        default_value="True",
+        description="Start EKF localization (sensor fusion)",
+        choices=["True", "False"],
+    )
+
     controller_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -104,6 +112,16 @@ def generate_launch_description():
             )
         ),
         condition=IfCondition(microros),
+    )
+
+    # EKF Localization Launch
+    ekf_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [FindPackageShare("robot_localization_tool"), "launch", "ekf.launch.py"]
+            )
+        ),
+        condition=IfCondition(localization),
     )
 
     # USB Camera Node
@@ -133,8 +151,10 @@ def generate_launch_description():
             declare_microros_arg,
             declare_include_nerf_arg,
             declare_camera_arg,
+            declare_localization_arg,
             microros_agent_launch,
             controller_launch,
+            ekf_launch,
             camera_node,
         ]
     )
