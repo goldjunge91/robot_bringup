@@ -36,7 +36,7 @@ def _generate_agent_process(context, *args, **kwargs):
     actions = []
 
     # Topic remappings to connect micro-ROS topics to ROS2 system
-    # 
+    #
     # IMPORTANT: micro-ROS Agent automatically adds /rt/ prefix to all topics
     # published/subscribed by the Pico firmware. This remapping configuration
     # maps those /rt/* topics to standard ROS2 topic names.
@@ -60,19 +60,19 @@ def _generate_agent_process(context, *args, **kwargs):
     #
     topic_remappings = [
         # Standard sensor topics - map from /rt/* to standard ROS2 names
-        ('/rt/joint_states', '/joint_states'),              # Motor encoder states
-        ('/rt/imu/data_raw', '/imu/data_raw'),              # ICM20948 9-DOF IMU data
-        ('/rt/odom', '/odom'),                              # Wheel odometry from firmware
-        
+        ('/rt/joint_states', '/joint_states'),  # Motor encoder states
+        ('/rt/imu/data_raw', '/imu/data_raw'),  # ICM20948 9-DOF IMU data
+        ('/rt/odom', '/odom'),  # Wheel odometry from firmware
+
         # Range sensors - descriptive names under /sensors namespace
-        ('/rt/sensors/range_tof', '/sensors/range_tof'),    # VL6180X Time-of-Flight sensor
+        ('/rt/sensors/range_tof', '/sensors/range_tof'),  # VL6180X Time-of-Flight sensor
         ('/rt/sensors/range_ultrasonic', '/sensors/range_ultrasonic'),  # HC-SR04 ultrasonic sensor
-        
+
         # Other sensors
-        ('/rt/sensors/illuminance', '/sensors/illuminance'), # VL6180X ambient light sensor
-        
+        ('/rt/sensors/illuminance', '/sensors/illuminance'),  # VL6180X ambient light sensor
+
         # Command topics - bidirectional mapping for velocity commands
-        ('/cmd_vel', '/rt/cmd_vel'),                        # Twist commands from controllers to firmware
+        ('/cmd_vel', '/rt/cmd_vel'),  # Twist commands from controllers to firmware
     ]
 
     if use_docker.lower() in ('1', 'true', 'yes'):
